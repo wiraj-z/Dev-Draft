@@ -5,11 +5,15 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarHTTPException
 
+from schemas import PostCreate, PostResponse
+
+
 #dummy data
 from dummy_data import posts
 
 
 app = FastAPI()
+
 templates = Jinja2Templates(directory='templates')
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -32,12 +36,29 @@ def post_page(request: Request, post_id: int):
 
 
 #APIs
-@app.get("/api/posts")
+@app.get("/api/posts", response_model=list[PostResponse])
 def get_posts():
     return posts
 
 
-@app.get("/api/post/{post_id}")
+@app.post("/api/posts", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+def create_post(post:PostCreate):
+    new_id = max(p["id"] for p in posts) + 1 if posts else 1
+
+    new_post ={
+        "id": new_id,
+        "author": post.author,
+        "title": post.title,
+        "content": post.content,
+        "date_posted": "xxx"
+    }
+
+    posts.append(new_post)
+    return new_post
+
+
+
+@app.get("/api/post/{post_id}", response_model=PostResponse)
 def get_post(post_id: int):
     for post in posts:
         if post.get("id") == post_id:
@@ -49,7 +70,7 @@ def get_post(post_id: int):
 
 
 
-#exeptions
+#Exception
 
 @app.exception_handler(StarHTTPException)
 def general_http_exception(request:Request, exception: StarHTTPException):
@@ -93,3 +114,4 @@ def validation_exception_handler(request: Request, exception: RequestValidationE
         },
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
     )
+
