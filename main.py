@@ -8,7 +8,7 @@ from starlette.exceptions import HTTPException as StarHTTPException
 from schemas import PostCreate, PostResponse, UserCreate, UserResponse
 from typing import Annotated
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 import models
 from database import Base, engine, get_db
@@ -33,7 +33,11 @@ def home(request: Request, db:Annotated[Session, Depends(get_db)]):
 
 @app.get("/posts/{post_id}", include_in_schema= False)
 def post_page(request: Request, post_id: int, db:Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(models.Post).where(models.Post.id == post_id))
+    result = db.execute(
+        select(models.Post)
+        .options(joinedload(models.Post.author))  
+        .where(models.Post.id == post_id)
+    )
     post = result.scalars().first()
 
     if post:
