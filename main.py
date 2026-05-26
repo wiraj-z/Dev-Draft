@@ -31,10 +31,10 @@ def home(request: Request, db:Annotated[Session, Depends(get_db)]):
     return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"})
     
 
-@app.get("/post/{post_id}", include_in_schema= False)
+@app.get("/posts/{post_id}", include_in_schema= False)
 def post_page(request: Request, post_id: int, db:Annotated[Session, Depends(get_db)]):
     result = db.execute(select(models.Post).where(models.Post.id == post_id))
-    post = result.scalar().first()
+    post = result.scalars().first()
 
     if post:
         title = post.title[:50]
@@ -65,7 +65,7 @@ def user_posts_page(
 
 #APIs
 
-@app.post("/api/users", response_description=UserResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/api/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     result = db.execute(select(models.User).where(models.User.username == user.username))
     
@@ -74,6 +74,7 @@ def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= "Username already exists")
     
+    result = db.execute(select(models.User).where(models.User.email == user.email))
     existing_email = result.scalars().first()
 
     if existing_email:
