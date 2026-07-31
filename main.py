@@ -71,7 +71,10 @@ async def post_page(
         return templates.TemplateResponse(
             request,
             "post.html",
-            {"post": post, "title": title},
+            {
+                "post": post,
+                "title": title,
+            },
         )
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
@@ -118,6 +121,15 @@ async def register_page(request: Request):
         request,
         "register.html",
         {"title": "Register"},
+    )
+
+
+@app.get("/account", include_in_schema=False)
+async def account_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "account.html",
+        {"title": "Account"},
     )
 
 
