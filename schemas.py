@@ -1,50 +1,55 @@
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from datetime import datetime
 
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-#user schemas
+
+# user schemas
 class UserBase(BaseModel):
     username: str = Field(min_length=1, max_length=50)
-    email: EmailStr= Field(max_length=120)
+    email: EmailStr = Field(max_length=120)
+
 
 class UserCreate(UserBase):
-    password:str = Field(min_length =2, max_length=50)
+    password: str = Field(min_length=2, max_length=50)
+
 
 class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    username:str
+    username: str
     image_file: str | None
     image_path: str
 
+
 class UserPrivate(UserPublic):
-    email:EmailStr
+    email: EmailStr
+
 
 class UserUpdate(BaseModel):
-    username: str | None = Field (default=None ,min_length=1, max_length=50)
-    email: EmailStr | None = Field(default=None ,max_length=120)
-    image_file: str | None = Field (default=None ,min_length=1, max_length=250)
+    username: str | None = Field(default=None, min_length=1, max_length=50)
+    email: EmailStr | None = Field(default=None, max_length=120)
+    image_file: str | None = Field(default=None, min_length=1, max_length=250)
+
 
 class Token(BaseModel):
-    access_token:str
-    token_type:str
+    access_token: str
+    token_type: str
 
-#post schemas
+
+# post schemas
 class PostBase(BaseModel):
     title: str = Field(min_length=1, max_length=100)
-    content: str =Field(min_length=1)
-    
+    content: str = Field(min_length=1)
 
 
 class PostCreate(PostBase):
-    user_id: int 
+    pass
 
 
 class PostUpdate(BaseModel):
-    title:str | None = Field(default=None, min_length=1, max_length=100)
+    title: str | None = Field(default=None, min_length=1, max_length=100)
     content: str | None = Field(default=None, min_length=1)
-
 
 
 class PostResponse(PostBase):
@@ -54,4 +59,3 @@ class PostResponse(PostBase):
     user_id: int
     date_posted: datetime
     author: UserPublic
-
