@@ -95,4 +95,5 @@ async def get_current_user(
         )
     return user
 
+
 CurrentUser = Annotated[models.User, Depends(get_current_user)]

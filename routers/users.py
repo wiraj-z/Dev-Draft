@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta  # noqa: EXE002
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated  # noqa: EXE002
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
