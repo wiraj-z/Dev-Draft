@@ -20,7 +20,7 @@ export function hideModal(modalId) {
   if (modal) modal.hide();
 }
 
-export function escapeHtml(text) {
+export function escapeHtmlg(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
