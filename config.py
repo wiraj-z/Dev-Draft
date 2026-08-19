@@ -1,4 +1,4 @@
-from pydantic import SecretStr  # noqa: EXE002
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +14,17 @@ class Settings(BaseSettings):
     posts_per_page: int = 10
 
     max_upload_size_bytes: int = 5 * 1024 * 1024  # 5 MB
+
+    reset_token_expire_minutes: int = 60
+
+    mail_server: str = "localhost"
+    mail_port: int = 587
+    mail_username: str = ""
+    mail_password: SecretStr = SecretStr("")
+    mail_from: str = "noreply@example.com"
+    mail_use_tls: bool = True
+
+    frontend_url: str = "http://localhost:8000"
 
 
 settings = Settings()  # load from the .env file
