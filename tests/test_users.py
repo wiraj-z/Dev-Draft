@@ -1,6 +1,9 @@
+from unittest.mock import patch
+
 import pytest
-from conftest import auth_headers, create_user, get_token
 from httpx import AsyncClient
+
+from conftest import auth_headers, create_user
 
 pytestmark = pytest.mark.asyncio
 
@@ -225,3 +228,112 @@ async def test_get_user_posts_empty(client: AsyncClient):
 async def test_get_user_posts_not_found(client: AsyncClient):
     resp = await client.get("/api/users/9999/posts")
     assert resp.status_code == 404
+
+
+# ── Forgot / Reset password ───────────────────────────────────────────────────
+
+
+async def test_forgot_password_existing_email(client: AsyncClient):
+    """Always returns 202 whether email exists or not (prevents user enumeration)."""
+    await create_user(client)
+    with patch("routers.users.send_password_reset_email") as mock_send:
+        mock_send.return_value = None
+        resp = await client.post(
+            "/api/users/forgot-password", json={"email": "test@example.com"}
+        )
+        assert resp.status_code == 202
+        mock_send.assert_called_once()
+
+
+async def test_forgot_password_nonexistent_email(client: AsyncClient):
+    """Returns 202 even for unknown emails — no info leak."""
+    with patch("routers.users.send_password_reset_email") as mock_send:
+        resp = await client.post(
+            "/api/users/forgot-password", json={"email": "nobody@example.com"}
+        )
+        assert resp.status_code == 202
+        mock_send.assert_not_called()  # email never sent for unknown address
+
+
+async def test_reset_password_success(client: AsyncClient):
+    await create_user(client)
+
+    # Step 1: request reset and capture the token
+    with patch("routers.users.send_password_reset_email") as mock_send:
+        mock_send.return_value = None
+        await client.post(
+            "/api/users/forgot-password", json={"email": "test@example.com"}
+        )
+        _, kwargs = mock_send.call_args
+        token = kwargs["token"]
+
+    # Step 2: reset with the captured token
+    resp = await client.post(
+        "/api/users/reset-password",
+        json={
+            "token": token,
+            "new_password": "brandnewpassword123",
+        },
+    )
+    assert resp.status_code == 200
+
+    # Step 3: old password no longer works
+    resp2 = await client.post(
+        "/api/users/token",
+        data={
+            "username": "test@example.com",
+            "password": "password123",
+        },
+    )
+    assert resp2.status_code == 401
+
+    # Step 4: new password works
+    resp3 = await client.post(
+        "/api/users/token",
+        data={
+            "username": "test@example.com",
+            "password": "brandnewpassword123",
+        },
+    )
+    assert resp3.status_code == 200
+
+
+async def test_reset_password_invalid_token(client: AsyncClient):
+    resp = await client.post(
+        "/api/users/reset-password",
+        json={
+            "token": "totallyinvalidtoken",
+            "new_password": "newpassword123",
+        },
+    )
+    assert resp.status_code == 400
+
+
+async def test_reset_password_token_used_twice(client: AsyncClient):
+    """Token is deleted after first use — second attempt should fail."""
+    await create_user(client)
+
+    with patch("routers.users.send_password_reset_email") as mock_send:
+        mock_send.return_value = None
+        await client.post(
+            "/api/users/forgot-password", json={"email": "test@example.com"}
+        )
+        _, kwargs = mock_send.call_args
+        token = kwargs["token"]
+
+    await client.post(
+        "/api/users/reset-password",
+        json={
+            "token": token,
+            "new_password": "firstreset123",
+        },
+    )
+
+    resp = await client.post(
+        "/api/users/reset-password",
+        json={
+            "token": token,
+            "new_password": "secondreset123",
+        },
+    )
+    assert resp.status_code == 400
