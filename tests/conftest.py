@@ -1,55 +1,80 @@
-import os
-
-os.environ.setdefault("SECRET_KEY", "testsecretkey1234567890123456789012")
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pytest
+import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
-import database as database_mod
 from database import Base, get_db
 from main import app
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# In-memory SQLite DB for tests (never touches your real DB)
+DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-test_engine = create_async_engine(TEST_DATABASE_URL)
-TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False)
-
-
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
+engine = create_async_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def prepare_db():
-    database_mod.engine = test_engine
-    database_mod.AsyncSessionLocal = TestSessionLocal
-
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    await test_engine.dispose()
-
-
-@pytest.fixture()
-async def db_session():
-    async with TestSessionLocal() as session:
+async def override_get_db():
+    async with TestingSessionLocal() as session:
         yield session
 
 
-@pytest.fixture()
+app.dependency_overrides[get_db] = override_get_db
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def setup_db():
+    """Create all tables before each test, drop after."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest_asyncio.fixture
 async def client():
-    async def override_get_db():
-        async with TestSessionLocal() as session:
-            yield session
-
-    app.dependency_overrides[get_db] = override_get_db
-
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://testserver"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         yield ac
+
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+
+async def create_user(
+    client: AsyncClient,
+    username="testuser",
+    email="test@example.com",
+    password="password123",
+):
+    resp = await client.post(
+        "/api/users",
+        json={
+            "username": username,
+            "email": email,
+            "password": password,
+        },
+    )
+    return resp
+
+
+async def get_token(
+    client: AsyncClient, email="test@example.com", password="password123"
+):
+    resp = await client.post(
+        "/api/users/token",
+        data={
+            "username": email,
+            "password": password,
+        },
+    )
+    return resp.json()["access_token"]
+
+
+async def auth_headers(
+    client: AsyncClient, email="test@example.com", password="password123"
+):
+    token = await get_token(client, email, password)
+    return {"Authorization": f"Bearer {token}"}
