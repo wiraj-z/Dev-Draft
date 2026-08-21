@@ -1,6 +1,7 @@
 import pytest
-from conftest import auth_headers, create_user
 from httpx import AsyncClient
+
+from conftest import auth_headers, create_user
 
 pytestmark = pytest.mark.asyncio
 
