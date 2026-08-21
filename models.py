@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 
+import cloudinary
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,7 +29,7 @@ class User(Base):
     @property
     def image_path(self) -> str:
         if self.image_file:
-            return f"/media/profile_pics/{self.image_file}"
+            return cloudinary.CloudinaryImage(self.image_file).build_url()
 
         return "/static/profile_pics/default.jpg"
 
@@ -69,5 +70,3 @@ class PasswordResetToken(Base):
     )
 
     user: Mapped[User] = relationship(back_populates="reset_tokens")
-
-   
