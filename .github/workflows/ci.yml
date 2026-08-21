@@ -27,4 +27,7 @@ jobs:
         env:
           SECRET_KEY: "ci-secret-key-not-for-production"
           DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          CLOUDINARY_CLOUD_NAME: "test"
+          CLOUDINARY_API_KEY: "test"
+          CLOUDINARY_API_SECRET: "test"
         run: uv run pytest tests/ -v --tb=short
