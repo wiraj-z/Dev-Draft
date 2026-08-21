@@ -1,34 +1,56 @@
 import uuid
 from io import BytesIO
-from pathlib import Path
 
+import cloudinary
+import cloudinary.uploader
 from PIL import Image, ImageOps
+from starlette.concurrency import run_in_threadpool
 
-PROFILE_PICS_DIR = Path("media/profile_pics")
+from config import settings
 
-def process_profile_picture(image_bytes: bytes) -> str:
-    with Image.open(BytesIO(image_bytes)) as orginal:
-        img = ImageOps.exif_transpose(orginal)
+cloudinary.config(
+    cloud_name=settings.cloudinary_cloud_name,
+    api_key=settings.cloudinary_api_key,
+    api_secret=settings.cloudinary_api_secret.get_secret_value(),
+    secure=True,
+)
 
-        img = ImageOps.fit(img,(300, 300), method=Image.Resampling.LANCZOS)
+FOLDER = "blog/profile_pics"
+
+
+def _process_and_upload(image_bytes: bytes) -> str:
+    with Image.open(BytesIO(image_bytes)) as original:
+        img = ImageOps.exif_transpose(original)
+        img = ImageOps.fit(img, (300, 300), method=Image.Resampling.LANCZOS)
 
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
 
-        filename = f"{uuid.uuid4().hex}.jpg"
-        filepath = PROFILE_PICS_DIR / filename
+        output = BytesIO()
+        img.save(output, format="JPEG", quality=85, optimize=True)
+        output.seek(0)
 
-        PROFILE_PICS_DIR.mkdir(parents=True, exist_ok=True)
-        img.save(filepath, format="JPEG", quality=85, optimize=True)
+    public_id = f"{FOLDER}/{uuid.uuid4().hex}"
 
-    return filename
+    result = cloudinary.uploader.upload(
+        output,
+        public_id=public_id,
+        resource_type="image",
+        overwrite=True,
+    )
+
+    return result["public_id"]
 
 
-def delete_profile_image(filename: str | None) -> None:
-    if filename is None:
+def _delete(public_id: str) -> None:
+    cloudinary.uploader.destroy(public_id, resource_type="image")
+
+
+async def process_profile_picture(image_bytes: bytes) -> str:
+    return await run_in_threadpool(_process_and_upload, image_bytes)
+
+
+async def delete_profile_image(public_id: str | None) -> None:
+    if public_id is None:
         return
-
-    filepath = PROFILE_PICS_DIR / filename
-    if filepath.exists():
-        filepath.unlink()
-
+    await run_in_threadpool(_delete, public_id)
