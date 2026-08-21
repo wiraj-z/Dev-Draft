@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     access_token_expire_minuts: int = 30
     posts_per_page: int = 10
 
+    cloudinary_cloud_name: str
+    cloudinary_api_key: str
+    cloudinary_api_secret: SecretStr
+
     max_upload_size_bytes: int = 5 * 1024 * 1024  # 5 MB
 
     reset_token_expire_minutes: int = 60

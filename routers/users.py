@@ -354,7 +354,7 @@ async def delete_user(
     await db.commit()
 
     if old_filename:
-        delete_profile_image(old_filename)
+        await delete_profile_image(old_filename)
 
 
 @router.patch("/{user_id}/picture", response_model=UserPrivate)
@@ -378,7 +378,7 @@ async def upload_profile_picture(
             detail=f"File size exceeds the maximum limit of {settings.max_upload_size_bytes / (1024 * 1024)} MB",
         )
     try:
-        new_filename = await run_in_threadpool(process_profile_picture, content)
+        new_filename = await process_profile_picture(content)
     except UnidentifiedImageError as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -392,7 +392,7 @@ async def upload_profile_picture(
     await db.refresh(current_user)
 
     if old_filename:
-        delete_profile_image(old_filename)
+        await delete_profile_image(old_filename)
 
     return current_user
 
@@ -420,6 +420,6 @@ async def delete_profile_picture(
     await db.commit()
     await db.refresh(current_user)
 
-    delete_profile_image(old_filename)
+    await delete_profile_image(old_filename)
 
     return current_user
