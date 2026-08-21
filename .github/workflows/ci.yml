@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    branches: [main, dev]
+    branches: [main]
 
 jobs:
   test:
@@ -26,4 +26,5 @@ jobs:
       - name: Run tests
         env:
           SECRET_KEY: "ci-secret-key-not-for-production"
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
         run: uv run pytest tests/ -v --tb=short
