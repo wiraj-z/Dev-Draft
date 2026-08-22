@@ -1,11 +1,14 @@
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 
-from conftest import auth_headers, create_user
+import models
+from conftest import TestingSessionLocal, auth_headers, create_user
 
-pytestmark = pytest.mark.asyncio
+pytestmark = pytest.mark.anyio
 
 
 # ── Registration ──────────────────────────────────────────────────────────────
@@ -38,6 +41,13 @@ async def test_register_duplicate_email(client: AsyncClient):
 async def test_register_missing_fields(client: AsyncClient):
     resp = await client.post("/api/users", json={"username": "onlyname"})
     assert resp.status_code == 422
+
+
+async def test_register_duplicate_username_case_insensitive(client: AsyncClient):
+    await create_user(client)
+    resp = await create_user(client, username="TESTUSER", email="other@example.com")
+    assert resp.status_code == 400
+    assert "username" in resp.json()["detail"].lower()
 
 
 # ── Login ─────────────────────────────────────────────────────────────────────
@@ -150,6 +160,20 @@ async def test_update_user_duplicate_username(client: AsyncClient):
         f"/api/users/{user_id}", json={"username": "taken"}, headers=headers
     )
     assert resp.status_code == 400
+
+
+async def test_update_user_duplicate_email(client: AsyncClient):
+    created_a = await create_user(client, username="userA", email="a@example.com")
+    await create_user(client, username="userB", email="b@example.com")
+
+    headers = await auth_headers(client, email="a@example.com")
+    resp = await client.patch(
+        f"/api/users/{created_a.json()['id']}",
+        json={"email": "b@example.com"},
+        headers=headers,
+    )
+    assert resp.status_code == 400
+    assert "email" in resp.json()["detail"].lower()
 
 
 # ── Delete user ───────────────────────────────────────────────────────────────
@@ -335,5 +359,30 @@ async def test_reset_password_token_used_twice(client: AsyncClient):
             "token": token,
             "new_password": "secondreset123",
         },
+    )
+    assert resp.status_code == 400
+
+
+async def test_reset_password_expired_token(client: AsyncClient):
+    await create_user(client)
+
+    with patch("routers.users.send_password_reset_email") as mock_send:
+        mock_send.return_value = None
+        await client.post(
+            "/api/users/forgot-password",
+            json={"email": "test@example.com"},
+        )
+        _, kwargs = mock_send.call_args
+        token = kwargs["token"]
+
+    async with TestingSessionLocal() as session:
+        result = await session.execute(select(models.PasswordResetToken))
+        reset_token = result.scalars().first()
+        reset_token.expires_at = datetime.now(UTC) - timedelta(minutes=1)
+        await session.commit()
+
+    resp = await client.post(
+        "/api/users/reset-password",
+        json={"token": token, "new_password": "newpass123"},
     )
     assert resp.status_code == 400
