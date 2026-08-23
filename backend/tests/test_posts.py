@@ -3,7 +3,7 @@ from httpx import AsyncClient
 
 from conftest import auth_headers, create_user
 
-pytestmark = pytest.mark.asyncio
+pytestmark = pytest.mark.anyio
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -58,6 +58,8 @@ async def test_get_posts_invalid_params(client: AsyncClient):
 
     resp3 = await client.get("/api/posts?limit=101")
     assert resp3.status_code == 422
+
+
 
 
 # ── Create post ───────────────────────────────────────────────────────────────
