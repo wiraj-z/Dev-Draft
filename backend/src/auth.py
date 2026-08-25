@@ -10,9 +10,9 @@ from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import models
-from config import settings
-from database import get_db
+from src import models
+from src.config import settings
+from src.database import get_db
 
 password_hash = PasswordHash.recommended()
 
