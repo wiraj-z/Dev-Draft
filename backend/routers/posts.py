@@ -4,11 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
-import models
-from auth import CurrentUser
-from database import get_db
-from schemas import PaginatedPostResponse, PostCreate, PostResponse, PostUpdate
+from src import models
+from src.auth import CurrentUser
+from src.database import get_db
+from src.schemas import PaginatedPostResponse, PostCreate, PostResponse, PostUpdate
 
 router = APIRouter()
 

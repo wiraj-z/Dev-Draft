@@ -1,9 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import models
-from config import settings
-from database import engine, get_db
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exception_handlers import (
     http_exception_handler,
@@ -16,6 +13,9 @@ from routers import posts, users
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from src import models
+from src.config import settings
+from src.database import engine, get_db
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 

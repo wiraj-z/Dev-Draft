@@ -6,7 +6,7 @@ import cloudinary.uploader
 from PIL import Image, ImageOps
 from starlette.concurrency import run_in_threadpool
 
-from config import settings
+from src.config import settings
 
 cloudinary.config(
     cloud_name=settings.cloudinary_cloud_name,

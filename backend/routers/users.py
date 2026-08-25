@@ -15,10 +15,8 @@ from sqlalchemy import delete as sql_delete
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from starlette.concurrency import run_in_threadpool
-
-import models
-from auth import (
+from src import models
+from src.auth import (
     CurrentUser,
     create_access_token,
     generate_reset_token,
@@ -26,11 +24,9 @@ from auth import (
     hash_reset_token,
     verify_password,
 )
-from config import settings
-from database import get_db
-from email_utils import send_password_reset_email
-from image_utils import delete_profile_image, process_profile_picture
-from schemas import (
+from src.config import settings
+from src.database import get_db
+from src.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     PostResponse,
@@ -41,6 +37,9 @@ from schemas import (
     UserPublic,
     UserUpdate,
 )
+from src.utils.email_utils import send_password_reset_email
+from src.utils.image_utils import delete_profile_image, process_profile_picture
+from starlette.concurrency import run_in_threadpool
 
 router = APIRouter()
 

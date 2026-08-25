@@ -2,11 +2,10 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
+from conftest import TestingSessionLocal, auth_headers, create_user
 from httpx import AsyncClient
 from sqlalchemy import select
-
-import models
-from conftest import TestingSessionLocal, auth_headers, create_user
+from src import models
 
 pytestmark = pytest.mark.anyio
 
