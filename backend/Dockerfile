@@ -1,33 +1,20 @@
-
-FROM python:3.14.4-slim-bookworm AS builder
+FROM python:3.14.4-slim-bookworm
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.6 /uv /uvx /bin/
 
 WORKDIR /app
 
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
-ENV UV_PYTHON_DOWNLOADS=0
+ENV UV_COMPILE_BYTECODE=0 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:$PATH"
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --no-install-project --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
 
-COPY . ./
-RUN uv sync --locked --no-dev
+COPY . .
 
-FROM python:3.14.4-slim-bookworm
+EXPOSE 8000
 
-WORKDIR /app
-
-RUN useradd -m appuser && chown -R appuser:appuser /app
-USER appuser
-
-COPY --from=builder --chown=appuser:appuser /app /app
-
-ENV PATH="/app/.venv/bin:$PATH"
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8080
-
-EXPOSE 8080
-
-CMD ["/bin/sh", "-c", "exec fastapi run --host 0.0.0.0 --port \"$PORT\" --proxy-headers --forwarded-allow-ips '*'"]
+CMD ["uv","run","fastapi","dev"]
