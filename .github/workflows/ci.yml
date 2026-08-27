@@ -1,4 +1,4 @@
-name: CI
+name: test
 
 on:
   push:
@@ -49,3 +49,6 @@ jobs:
           CLOUDINARY_API_SECRET: "test"
           ALLOWED_ORIGINS: '["http://localhost:3000"]'
         run: uv run pytest tests/ -v --tb=short
+  
+
+  
