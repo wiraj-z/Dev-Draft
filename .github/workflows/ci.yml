@@ -10,6 +10,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,8 +43,9 @@ jobs:
         working-directory: backend
         env:
           SECRET_KEY: "ci-secret-key-not-for-production"
-          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          DATABASE_URL: "postgresql+asyncpg://postgres:password@localhost:5432/test_db"
           CLOUDINARY_CLOUD_NAME: "test"
           CLOUDINARY_API_KEY: "test"
           CLOUDINARY_API_SECRET: "test"
+          ALLOWED_ORIGINS: '["http://localhost:3000"]'
         run: uv run pytest tests/ -v --tb=short
