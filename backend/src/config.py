@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
     )
     database_url: str
 
@@ -30,6 +31,8 @@ class Settings(BaseSettings):
     mail_use_tls: bool = True
 
     frontend_url: str = "http://localhost:8000"
+
+    allowed_origins: list[str] = ["http://localhost:3000"]
 
 
 settings = Settings()  # load from the .env file
