@@ -32,5 +32,7 @@ class Settings(BaseSettings):
 
     frontend_url: str = "http://localhost:8000"
 
+    allowed_origins: list[str] = ["http://localhost:3000"]
+
 
 settings = Settings()  # load from the .env file
