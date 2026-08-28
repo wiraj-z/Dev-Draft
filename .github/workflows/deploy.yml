@@ -110,7 +110,7 @@ jobs:
 
       - name: Copy files to VPS
         env:
-          HOST: ${{ secrets.VPS_HOST }}
+          HOST: ${{ secrets.SERVER_IP }}
           USER: ${{ secrets.VPS_USER }}
         run: |
           SSH="ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes ${USER}@${HOST}"
