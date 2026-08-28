@@ -121,7 +121,7 @@ jobs:
 
       - name: Verify signature and deploy
         env:
-          HOST: ${{ secrets.VPS_HOST }}
+          HOST: ${{ secrets.SERVER_IP }}
           USER: ${{ secrets.VPS_USER }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
