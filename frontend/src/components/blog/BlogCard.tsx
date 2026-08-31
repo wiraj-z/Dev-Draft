@@ -1,6 +1,8 @@
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Avatar } from "@/components/ui/Avatar";
-import { formatDate, truncateText } from "@/lib/utils/dates";
+import { formatDate } from "@/lib/utils/dates";
 import type { Post } from "@/types/blog";
 
 type BlogCardProps = {
@@ -33,9 +35,11 @@ export function BlogCard({ post }: BlogCardProps) {
         </Link>
       </h3>
 
-      <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
-        {truncateText(post.content, 160)}
-      </p>
+      <div className="mt-3 flex-1 text-sm leading-relaxed text-muted prose prose-invert prose-sm prose-p:my-0 prose-headings:my-0 prose-a:text-muted prose-strong:text-muted prose-pre:hidden overflow-hidden line-clamp-3">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {post.content}
+        </ReactMarkdown>
+      </div>
 
       <div className="mt-6 flex items-center">
         <Link
