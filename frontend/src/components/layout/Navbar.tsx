@@ -12,6 +12,10 @@ export function Navbar() {
   const pathname = usePathname();
   const { isAuthenticated, isLoading, logout } = useAuth();
 
+  if (pathname?.startsWith("/post-create")) {
+    return null;
+  }
+
   const visibleMainNav = mainNavItems.filter((item) => {
     if (item.requiresAuth) {
       return isAuthenticated;

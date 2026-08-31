@@ -1,8 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { footerNavItems } from "@/config/navigation";
 import { siteConfig } from "@/config/site";
 
 export function Footer() {
+  const pathname = usePathname();
+  
+  if (pathname?.startsWith("/post-create")) {
+    return null;
+  }
   return (
     <footer className="mt-auto border-t border-border bg-background">
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 md:grid-cols-2">

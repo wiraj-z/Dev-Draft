@@ -1,4 +1,6 @@
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatDateTime } from "@/lib/utils/dates";
 import type { Post } from "@/types/blog";
@@ -38,8 +40,10 @@ export function PostContent({ post }: PostContentProps) {
         </div>
       </header>
 
-      <div className="prose prose-invert prose-brand mt-10 max-w-none whitespace-pre-wrap text-lg leading-relaxed text-muted prose-headings:text-foreground prose-a:text-brand-500 hover:prose-a:text-brand-400 prose-strong:text-foreground">
-        {post.content}
+      <div className="prose prose-invert prose-brand mt-10 max-w-none text-lg leading-relaxed text-muted prose-headings:text-foreground prose-a:text-brand-500 hover:prose-a:text-brand-400 prose-strong:text-foreground prose-pre:bg-surface prose-pre:border-border prose-pre:border">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {post.content}
+        </ReactMarkdown>
       </div>
     </article>
   );
