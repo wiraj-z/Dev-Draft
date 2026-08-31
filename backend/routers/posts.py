@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from src import models
 from src.auth import CurrentUser
 from src.database import get_db
+from src.limiter import limiter
 from src.schemas import PaginatedPostResponse, PostCreate, PostResponse, PostUpdate
 
 router = APIRouter()
@@ -46,7 +47,9 @@ async def get_posts(
     response_model=PostResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit("10/minute")
 async def create_post(
+    request: Request,
     post: PostCreate,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -77,7 +80,9 @@ async def get_post(post_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
 
 
 @router.put("/{post_id}", response_model=PostResponse)
+@limiter.limit("10/minute")
 async def update_post_full(
+    request: Request,
     post_id: int,
     post_data: PostCreate,
     current_user: CurrentUser,
@@ -105,7 +110,9 @@ async def update_post_full(
 
 
 @router.patch("/{post_id}", response_model=PostResponse)
+@limiter.limit("10/minute")
 async def update_post_partial(
+    request: Request,
     post_id: int,
     post_data: PostUpdate,
     current_user: CurrentUser,
@@ -135,7 +142,9 @@ async def update_post_partial(
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("15/minute")
 async def delete_post(
+    request: Request,
     post_id: int,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],

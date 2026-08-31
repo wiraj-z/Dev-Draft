@@ -12,4 +12,4 @@ def get_ip(request: Request) -> str:
     return get_remote_address(request)
 
 
-limiter = Limiter(key_func=get_ip, storage_uri=settings.rate_limit_storage_uri)
+limiter = Limiter(key_func=get_ip, storage_uri=settings.redis_url)

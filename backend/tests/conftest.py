@@ -1,13 +1,13 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
-from main import app
+from main import app, limiter
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from src.database import Base, get_db
 
-# In-memory SQLite DB for tests (never touches your real DB)
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
+limiter.enabled = False  # Disable rate limiting for tests
 engine = create_async_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
