@@ -1,4 +1,5 @@
 import { BlogList } from "@/components/blog/BlogList";
+import { BlogSidebar } from "@/components/blog/BlogSidebar";
 import { Pagination } from "@/components/blog/Pagination";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -62,28 +63,31 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   }
 
   return (
-    <PageContainer>
-      <header className="mb-10">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground">Blog</h1>
-        <p className="mt-2 text-muted">Explore all published articles.</p>
-      </header>
+    <PageContainer className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start justify-between max-w-7xl">
+      <div className="flex-1 w-full min-w-0 max-w-4xl">
+        <header className="mb-10">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Blog</h1>
+          <p className="mt-2 text-muted">Explore all published articles.</p>
+        </header>
 
-      {data.posts.length > 0 ? (
-        <>
-          <BlogList posts={data.posts} />
-          <Pagination
-            skip={data.skip}
-            limit={data.limit}
-            total={data.total}
-            hasMore={data.has_more}
+        {data.posts.length > 0 ? (
+          <>
+            <BlogList posts={data.posts} />
+            <Pagination
+              skip={data.skip}
+              limit={data.limit}
+              total={data.total}
+              hasMore={data.has_more}
+            />
+          </>
+        ) : (
+          <EmptyState
+            title="No posts found"
+            description="There are no published posts yet."
           />
-        </>
-      ) : (
-        <EmptyState
-          title="No posts found"
-          description="There are no published posts yet."
-        />
-      )}
+        )}
+      </div>
+      <BlogSidebar />
     </PageContainer>
   );
 }

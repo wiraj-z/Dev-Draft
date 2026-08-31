@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { BlogSidebar } from "@/components/blog/BlogSidebar";
 import { PostContent } from "@/components/blog/PostContent";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -79,8 +80,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <PageContainer narrow>
-      <PostContent post={post} />
+    <PageContainer className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start justify-between max-w-7xl">
+      <div className="flex-1 w-full min-w-0 max-w-4xl">
+        <PostContent post={post} />
+      </div>
+      <BlogSidebar currentPost={post} />
     </PageContainer>
   );
 }

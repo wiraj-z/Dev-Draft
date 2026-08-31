@@ -4,20 +4,25 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
-import { createPost, getUserPosts } from "@/lib/api/posts";
+import { createPost, getUserPosts, getPost, updatePost } from "@/lib/api/posts";
 import type { Post } from "@/types/blog";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { formatDate } from "@/lib/utils/dates";
 
-export function EditorWorkspace() {
+type EditorWorkspaceProps = {
+  postId?: number;
+};
+
+export function EditorWorkspace({ postId }: EditorWorkspaceProps = {}) {
   const { user, token } = useAuth();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingPost, setIsLoadingPost] = useState(!!postId);
   const [error, setError] = useState<string | null>(null);
   const [myPosts, setMyPosts] = useState<Post[]>([]);
 
@@ -26,6 +31,22 @@ export function EditorWorkspace() {
       getUserPosts(user.id).then(setMyPosts).catch(console.error);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (postId) {
+      setIsLoadingPost(true);
+      getPost(postId)
+        .then((post) => {
+          setTitle(post.title);
+          setContent(post.content);
+          setIsLoadingPost(false);
+        })
+        .catch((err) => {
+          setError(getErrorMessage(err, "Unable to load post."));
+          setIsLoadingPost(false);
+        });
+    }
+  }, [postId]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -48,7 +69,12 @@ export function EditorWorkspace() {
     setIsSaving(true);
     setError(null);
     try {
-      const post = await createPost({ title: title.trim(), content: content.trim() }, token);
+      let post;
+      if (postId) {
+        post = await updatePost(postId, { title: title.trim(), content: content.trim() }, token);
+      } else {
+        post = await createPost({ title: title.trim(), content: content.trim() }, token);
+      }
       router.push(`/blog/${post.id}`);
     } catch (err) {
       setError(getErrorMessage(err, "Unable to publish post."));
@@ -64,6 +90,14 @@ export function EditorWorkspace() {
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
   const charCount = content.length;
 
+  if (isLoadingPost) {
+    return (
+      <div className="flex h-full flex-col bg-background items-center justify-center">
+        <p className="text-muted">Loading editor...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Global Header */}
@@ -71,9 +105,9 @@ export function EditorWorkspace() {
         <Link href="/" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
           ← Back to Home
         </Link>
-        <div className="text-sm font-medium text-foreground">Write Post</div>
+        <div className="text-sm font-medium text-foreground">{postId ? "Edit Post" : "Write Post"}</div>
         <Button onClick={handlePublish} isLoading={isSaving} size="sm">
-          Publish
+          {postId ? "Update" : "Publish"}
         </Button>
       </header>
 
