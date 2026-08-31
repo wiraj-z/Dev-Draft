@@ -1,10 +1,10 @@
 export const siteConfig = {
-  name: "Inkwell",
+  name: "DevDraft",
   description:
     "A modern blog platform for sharing ideas, stories, and technical writing.",
   author: {
-    name: "Blog Author",
-    bio: "Writer, developer, and lifelong learner sharing thoughts on technology and creativity.",
+    name: "Sayuranga Wiraj",
+    bio: "Full stack Engineer with a passion for building scalable and maintainable systems.",
   },
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "en_US",

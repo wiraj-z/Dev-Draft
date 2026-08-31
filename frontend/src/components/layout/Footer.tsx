@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 
 export function Footer() {
   const pathname = usePathname();
-  
+
   if (pathname?.startsWith("/post-create")) {
     return null;
   }

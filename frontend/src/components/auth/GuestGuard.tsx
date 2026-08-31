@@ -13,7 +13,7 @@ type GuestGuardProps = {
 
 export function GuestGuard({
   children,
-  redirectTo = "/account",
+  redirectTo = "/",
 }: GuestGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
