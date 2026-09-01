@@ -1,3 +1,3 @@
 export const authConfig = {
-  tokenStorageKey: "inkwell_access_token",
+  tokenStorageKey: "devdraft_access_token",
 } as const;
