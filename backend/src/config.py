@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:8000"
 
     allowed_origins: list[str] = ["http://localhost:3000"]
+    redis_url: str = "redis://localhost:6379"
+
 
 
 settings = Settings()  # load from the .env file

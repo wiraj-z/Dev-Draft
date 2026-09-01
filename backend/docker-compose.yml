@@ -17,6 +17,13 @@ services:
       retries: 5
       start_period: 10s
 
+  redis:
+    image: redis:7-alpine
+    container_name: blog_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
   backend:
     build: .
     container_name: blog_backend
@@ -33,6 +40,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - .:/app
       - /app/.venv

@@ -6,6 +6,7 @@ from fastapi import (
     BackgroundTasks,
     Depends,
     HTTPException,
+    Request,
     UploadFile,
     status,
 )
@@ -26,6 +27,7 @@ from src.auth import (
 )
 from src.config import settings
 from src.database import get_db
+from src.limiter import limiter
 from src.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
@@ -84,7 +86,9 @@ async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_
 
 
 @router.post("/token", response_model=Token)
+@limiter.limit("5/minute")
 async def login_for_access_token(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -118,8 +122,10 @@ async def get_current_user(current_user: CurrentUser):
 
 
 @router.post("/forgot-password", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("3/minute")
 async def forgot_password(
     request_data: ForgotPasswordRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -164,7 +170,9 @@ async def forgot_password(
 
 
 @router.patch("/me/password", status_code=status.HTTP_200_OK)
+@limiter.limit("3/minute")
 async def change_password(
+    request: Request,
     password_data: ChangePasswordRequest,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -188,7 +196,9 @@ async def change_password(
 
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
 async def reset_password(
+    request: Request,
     request_data: ResetPasswordRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -422,3 +432,4 @@ async def delete_profile_picture(
     await delete_profile_image(old_filename)
 
     return current_user
+
