@@ -1,4 +1,6 @@
-from pydantic import SecretStr
+from typing import Any
+
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,11 +31,21 @@ class Settings(BaseSettings):
     mail_password: SecretStr = SecretStr("")
     mail_from: str = "noreply@example.com"
     
+    redis_url: str = "redis://localhost:6379"
 
     frontend_url: str = "http://localhost:8000"
 
     allowed_origins: list[str] = ["http://localhost:3000"]
-    redis_url: str = "redis://localhost:6379"
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_origins(cls, v: Any) -> list[str]:
+        if isinstance(v, str) and not v.startswith("["):
+            return [o.strip() for o in v.split(",")]
+        if isinstance(v, str):
+            import json
+            return json.loads(v)
+        return v
+    
 
 
 
