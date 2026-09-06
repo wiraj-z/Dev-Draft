@@ -57,12 +57,19 @@ export function LoginForm() {
       />
 
       <div className="flex items-center justify-between text-sm">
-        <Link href="/forgot-password" className="text-brand-500 transition-colors hover:text-brand-400">
+        <Link
+          href="/forgot-password"
+          className="text-brand-500 transition-colors hover:text-brand-400"
+        >
           Forgot password?
         </Link>
       </div>
 
-      <Button type="submit" className="w-full" isLoading={isLoading}>
+      <Button
+        type="submit"
+        className="w-full cursor-pointer"
+        isLoading={isLoading}
+      >
         Log in
       </Button>
     </form>

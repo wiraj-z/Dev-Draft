@@ -70,16 +70,9 @@ export function RegisterForm() {
         onChange={(event) => setPassword(event.target.value)}
       />
 
-      <Button type="submit" className="w-full" isLoading={isLoading}>
+      <Button type="submit" className="w-full cursor-pointer" isLoading={isLoading}>
         Create account
       </Button>
-
-      <p className="text-center text-sm text-muted">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-brand-500 transition-colors hover:text-brand-400">
-          Log in
-        </Link>
-      </p>
     </form>
   );
 }
