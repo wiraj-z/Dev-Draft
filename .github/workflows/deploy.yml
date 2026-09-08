@@ -17,12 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}~1
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
       - name: Filter changes
         uses: dorny/paths-filter@v3
         id: changes
         with:
-          base: ${{ github.event.workflow_run.head_branch }}
           filters: |
             backend:
               - "backend/**"
