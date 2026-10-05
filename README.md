@@ -2,6 +2,9 @@
 
 A blog application with a **FastAPI backend** and a **Next.js frontend**. The backend provides a REST API with JWT authentication, post management, and user profiles. The frontend is a modern React/TypeScript app that consumes the API.
 
+[![test](https://github.com/wiraj-z/Blog/actions/workflows/ci.yml/badge.svg)](https://github.com/wiraj-z/Blog/actions/workflows/ci.yml)
+[![Build and Deploy](https://github.com/wiraj-z/Blog/actions/workflows/deploy.yml/badge.svg)](https://github.com/wiraj-z/Blog/actions/workflows/deploy.yml)
+
 ## Tech stack
 
 ### Backend (`backend/`)
